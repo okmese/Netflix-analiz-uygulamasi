@@ -5,8 +5,8 @@ import seaborn as sns
 import time
 import plotly.express as px
 
-movie = pd.read_csv("netflixDataset/movie.csv",parse_dates = ["date_added"])
-series = pd.read_csv("netflixDataset/series.csv",parse_dates = ["date_added"])
+movie = pd.read_csv("movie.csv",parse_dates = ["date_added"])
+series = pd.read_csv("series.csv",parse_dates = ["date_added"])
 netflix1 = pd.concat([series , movie])
 netflix = netflix1.drop(["budget","revenue","duration","vote_average"], axis = 1) 
 netflix["type"] = netflix["type"].str.replace(" ", "_")
