@@ -70,22 +70,22 @@ with col2:
         st.metric("Toplam Satır", len(netflix))
         st.metric("Toplam Sütun", len(netflix.columns))
 
-with st.container(border = True , height = 575):
-    st.sidebar.title("Netflix Analizi")
-    st.sidebar.text("Bir analiz seçin")
-    if st.sidebar.button("Genel Analiz"):
-        ss.analiz = False
-        ss.genelAnaliz = True
-        with st.spinner("Genel Analiziniz yükleniyor..."):
-            time.sleep(2.5)
-    if st.sidebar.button("Grafiksel Analiz"):
-        ss.analiz = True
-        ss.genelAnaliz = False
-        with st.spinner("Grafiksel Analiziniz yükleniyor..."):
-            time.sleep(2.5)
 
-    if ss.genelAnaliz:
+st.sidebar.title("Netflix Analizi")
+st.sidebar.text("Bir analiz seçin")
+if st.sidebar.button("Genel Analiz"):
+    ss.analiz = False
+    ss.genelAnaliz = True
+    with st.spinner("Genel Analiziniz yükleniyor..."):
+        time.sleep(2.5)
+if st.sidebar.button("Grafiksel Analiz"):
+    ss.analiz = True
+    ss.genelAnaliz = False
+    with st.spinner("Grafiksel Analiziniz yükleniyor..."):
+        time.sleep(2.5)
 
+if ss.genelAnaliz:
+    with st.container(border = True , height = 1000):
         col1, col2, col3 = st.columns(3)
         with col1:
             with st.container(border = True):
@@ -97,7 +97,7 @@ with st.container(border = True , height = 575):
             with st.container(border = True):
                 st.metric(label = "Film Sayısı" ,value = f"{len(netflix[netflix["type"] == "Movie"])}")
 
-        with st.container(border = True):
+        with st.container(border = True ):
             "# 🔥TOP 10:"
             col1, col2 = st.columns(2)
             with col1:
@@ -108,7 +108,7 @@ with st.container(border = True , height = 575):
                 "### En çok içerik üreten ülkeler:"
                 ülkeÇok = netflix["country"].value_counts().head(10).reset_index()
                 ülkeÇok.columns = ["Ülke", "Toplam Dizi ve Film sayısı"]
-                st.dataframe(ülkeÇok ,hide_index=True)
+                st.dataframe(ülkeÇok ,hide_index=True,column_config={"Ülke": st.column_config.TextColumn(width= "small")})
             with col2:
                 "### En çok DİZİ üreten ülkeler:"
                 diziFiltre = netflix[netflix["type"] == "TV_Show"]
@@ -119,7 +119,7 @@ with st.container(border = True , height = 575):
                 filmFiltre = netflix[netflix["type"] == "Movie"]
                 filmÇok = filmFiltre["country"].value_counts().head(10).reset_index()
                 filmÇok.columns = ["Ülke", "Toplam Film sayısı"]
-                st.dataframe(filmÇok ,hide_index=True , height = 200)
+                st.dataframe(filmÇok ,hide_index=True , height = 200 ,column_config={"Ülke": st.column_config.TextColumn(width= "small")})
             ""
             "---"
             "## ✨Rating Sıralaması (ilk 100):"
@@ -134,21 +134,21 @@ with st.container(border = True , height = 575):
                 st.markdown("<h3 style='text-align: center;'>DİZİLER</h3>", unsafe_allow_html=True)
                 diziRating = netflix[netflix["type"] == "TV_Show"]
                 diziRatingFiltre = diziRating.groupby("title")["rating"].mean()
-                st.dataframe(diziRatingFiltre.sort_values(ascending = False).head(100))
+                st.dataframe(diziRatingFiltre.sort_values(ascending = False).head(100) , height =320)
 
                 st.markdown("<h3 style='text-align: center;'>TÜRLER</h3>", unsafe_allow_html=True)
-                türRating = netflix.groupby("genres")["rating"].mean()
-                st.dataframe(türRating.sort_values(ascending = False).head(100))
+                türRating = netflix.groupby("genres")["rating"].mean().reset_index()
+                st.dataframe(türRating.sort_values(by="rating",ascending = False).head(100),hide_index=True , column_config={"genres": st.column_config.TextColumn(width= "medium")} , height =320)
 
             with col2:
                 st.markdown("<h3 style='text-align: center;'>FİLMLER</h3>", unsafe_allow_html=True)
                 filmRating = netflix[netflix["type"] == "Movie"]
                 filmRatingFiltre = filmRating.groupby("title")["rating"].mean()
-                st.dataframe(filmRatingFiltre.sort_values(ascending = False).head(100))
+                st.dataframe(filmRatingFiltre.sort_values(ascending = False).head(100) , height =320)
 
                 st.markdown("<h3 style='text-align: center;'>YILLAR</h3>", unsafe_allow_html=True)
                 yılRating = netflix.groupby("release_year")["rating"].mean()
-                st.dataframe(yılRating.sort_values(ascending = False).head(100))
+                st.dataframe(yılRating.sort_values(ascending = False).head(100) , height =320)
 
             ""
             "---"
@@ -169,13 +169,13 @@ with st.container(border = True , height = 575):
             )
 
             seçenekAnaliz = netflix[(netflix["country"].isin(seçtiğinÜlke)) & (netflix["release_year"] >= başlangıç) & (netflix["release_year"] <= bitiş) & (netflix["type"].isin(dizi_film))]
-            with st.container(border = True, height = 400):
+            with st.container(border = True, height = 450):
                 if not seçenekAnaliz.empty:
                     st.write(seçenekAnaliz)
 
 
-    if ss.analiz:
-
+if ss.analiz:
+    with st.container(border = True , height = 600):
         st.sidebar.write(" ### Kontrol paneli :")
 
         Xdeğeri = netflix.columns.drop(["show_id","genres","description","date_added","release_year","rating","vote_count", "cast" , "popularity"])
@@ -187,6 +187,7 @@ with st.container(border = True , height = 575):
 
 
         if ss.secilen_grafik == grafikler[0]:
+            Ydeğeri = Ydeğeri.drop(["date_added"])
             SeçilenX = st.sidebar.selectbox("Bar Grafiğinin X değeri:", Xdeğeri, key = "x")
             SeçilenY = st.sidebar.selectbox("Bar Grafiğinin Y değeri:", Ydeğeri, key = "y")
             grafikTürü = "bar"
@@ -224,7 +225,7 @@ with st.container(border = True , height = 575):
             SeçilenY = st.sidebar.selectbox("Balon Grafiğinin Y değeri:", Ydeğeri, key = "y")
             grafikTürü = "balon"
         if ss.secilen_grafik == grafikler[8]:
-            Ydeğeri = Ydeğeri.drop(["country","language","director","title","date_added","release_year"])
+            Ydeğeri = Ydeğeri.drop(["language","director","date_added","release_year"])
             SeçilenX = st.sidebar.selectbox("Alan Grafiğinin X değeri:", Xdeğeri2, key = "x")
             SeçilenY = st.sidebar.selectbox("Alan Grafiğinin Y değeri:", Ydeğeri, key = "y")
             grafikTürü = "alan"
